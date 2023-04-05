@@ -49,6 +49,18 @@ static char s_message[ULOG_MAX_MESSAGE_LENGTH];
 
 // =============================================================================
 // user-visible code
+#ifdef LINUX_MUTEX_ENABLED
+#include <pthread.h>
+// 创建互斥量句柄
+static pthread_mutex_t s_mutex = PTHREAD_MUTEX_INITIALIZER;
+#endif
+
+#ifdef WIN32_MUTEX_ENABLED
+#include <windows.h>
+// 创建互斥量句柄
+static CRITICAL_SECTION s_mutex;
+#endif
+
 #ifdef FREERTOS_MUTEX_ENABLED
 #include "FreeRTOS.h"
 #include "semphr.h"
@@ -56,12 +68,55 @@ static char s_message[ULOG_MAX_MESSAGE_LENGTH];
 static SemaphoreHandle_t s_mutex = NULL;
 #endif
 
-void ulog_init() {
-  memset(s_subscribers, 0, sizeof(s_subscribers));
+static void ulog_mutex_init() {
+#ifdef LINUX_MUTEX_ENABLED
+  // 创建互斥量
+  pthread_mutex_init(&s_mutex, NULL);
+#endif
+
+#ifdef WIN32_MUTEX_ENABLED
+  // 创建互斥量
+  InitializeCriticalSection(&s_mutex);
+#endif
+
 #ifdef FREERTOS_MUTEX_ENABLED
   // 创建互斥量
   s_mutex = xSemaphoreCreateMutex();
 #endif
+}
+
+static void ulog_mutex_lock() {
+#ifdef LINUX_MUTEX_ENABLED
+  pthread_mutex_lock(&s_mutex); // 获取互斥量
+#endif
+
+#ifdef WIN32_MUTEX_ENABLED
+  EnterCriticalSection(&s_mutex); // 获取互斥量
+#endif
+
+#ifdef FREERTOS_MUTEX_ENABLED
+  xSemaphoreTake(s_mutex, portMAX_DELAY); // 获取互斥量
+#endif
+}
+
+static void ulog_mutex_unlock() {
+#ifdef LINUX_MUTEX_ENABLED
+  pthread_mutex_unlock(&s_mutex);  // 释放互斥量
+#endif
+
+#ifdef WIN32_MUTEX_ENABLED
+  LeaveCriticalSection(&s_mutex);  // 释放互斥量
+#endif
+
+#ifdef FREERTOS_MUTEX_ENABLED
+  xSemaphoreGive(s_mutex);    // 释放互斥量
+#endif
+}
+
+
+void ulog_init() {
+  memset(s_subscribers, 0, sizeof(s_subscribers));
+  ulog_mutex_init();
 }
 
 // search the s_subscribers table to install or update fn
@@ -114,10 +169,7 @@ const char *ulog_level_name(ulog_level_t severity) {
 }
 
 void ulog_message(ulog_level_t severity, __in const char* filename, __in int lineno, __in const char* funcname, const char *fmt, ...) {
-#ifdef FREERTOS_MUTEX_ENABLED
-  // 获取互斥量
-  xSemaphoreTake(s_mutex, portMAX_DELAY);
-#endif
+  ulog_mutex_lock();
   memset(s_message, 0, sizeof(s_message));
 
   int len = 0;
@@ -134,10 +186,7 @@ void ulog_message(ulog_level_t severity, __in const char* filename, __in int lin
       }
     }
   }
-#ifdef FREERTOS_MUTEX_ENABLED
-  // 释放互斥量
-  xSemaphoreGive(s_mutex);
-#endif
+  ulog_mutex_unlock();
 }
 
 // =============================================================================

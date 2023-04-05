@@ -74,7 +74,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // your compiler switches.
 #define ULOG_ENABLED
 #define __in
+
 #define FREERTOS_MUTEX_ENABLED
+#ifndef FREERTOS_MUTEX_ENABLED
+#ifdef __linux__
+#define LINUX_MUTEX_ENABLED
+#else
+// #ifdef _WIN32
+#define WIN32_MUTEX_ENABLED
+// #endif
+#endif
+#endif
+
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -100,13 +112,6 @@ typedef enum {
   #define ULOG_UNSUBSCRIBE(a) ulog_unsubscribe(a)
   #define ulog_level_name(a) ulog_level_name(a)
   // #define ULOG(...) ulog_message(__VA_ARGS__)
-  // #define ULOG_TRACE(...) ulog_message(ULOG_TRACE_LEVEL, __VA_ARGS__)
-  // #define ULOG_DEBUG(...) ulog_message(ULOG_DEBUG_LEVEL, __VA_ARGS__)
-  // #define ULOG_INFO(...) ulog_message(ULOG_INFO_LEVEL, __VA_ARGS__)
-  // #define ULOG_WARNING(...) ulog_message(ULOG_WARNING_LEVEL, __VA_ARGS__)
-  // #define ULOG_ERROR(...) ulog_message(ULOG_ERROR_LEVEL, __VA_ARGS__)
-  // #define ULOG_CRITICAL(...) ulog_message(ULOG_CRITICAL_LEVEL, __VA_ARGS__)
-  // #define ULOG_ALWAYS(...) ulog_message(ULOG_ALWAYS_LEVEL, __VA_ARGS__)
   #define ULOG_TRACE(...) ulog_message(ULOG_TRACE_LEVEL, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
   #define ULOG_DEBUG(...) ulog_message(ULOG_DEBUG_LEVEL, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
   #define ULOG_INFO(...) ulog_message(ULOG_INFO_LEVEL, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
@@ -121,7 +126,7 @@ typedef enum {
   #define ULOG_SUBSCRIBE(a, b) do {} while(0)
   #define ULOG_UNSUBSCRIBE(a) do {} while(0)
   #define ulog_level_name(a) do {} while(0)
-  #define ULOG(s, f, ...) do {} while(0)
+  // #define ULOG(s, f, ...) do {} while(0)
   #define ULOG_TRACE(f, ...) do {} while(0)
   #define ULOG_DEBUG(f, ...) do {} while(0)
   #define ULOG_INFO(f, ...) do {} while(0)
