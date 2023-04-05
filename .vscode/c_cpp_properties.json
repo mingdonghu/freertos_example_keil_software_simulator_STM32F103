@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "name": "MCU",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:\\Keil_v5\\ARM\\ARMCC\\include"
+            ],
+            "defines": [
+                "RVDS_ARMCM3_LM3S102"
+            ],
+            "cStandard": "c99",
+            "cppStandard": "c++11"
+        }
+    ],
+    "version": 4
+}

@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    "freertos.h": "c",
+    "semphr.h": "c",
+    "spi_flash.h": "c"
+  }
+}
